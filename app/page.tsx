@@ -1,103 +1,187 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Toaster, toast } from 'sonner'
+import { useState } from 'react'
+
+const formSchema = z.object({
+  contactMethod: z.enum(["email", "phone"]),
+  contactValue: z.string().refine((val) => {
+    if (!val) return false
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/
+    
+    return emailRegex.test(val) || phoneRegex.test(val)
+  }, {
+    message: "Please enter a valid email or phone number",
+  }),
+  reason: z.enum([
+    "no_longer_needed",
+    "privacy_concerns",
+    "switching_service",
+    "not_satisfied",
+    "other"
+  ]),
+  customReason: z.string().optional(),
+})
+
+export default function AccountDeletionPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      contactMethod: "email",
+      contactValue: "",
+      reason: "no_longer_needed",
+      customReason: "",
+    },
+  })
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/account-deletion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Une erreur s\'est produite')
+      }
+
+      toast.success('Demande de suppression envoyée avec succès')
+      form.reset()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Une erreur s\'est produite')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="max-w-2xl mx-auto p-8">
+      <Toaster richColors position="top-center" />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      <h1 className="text-3xl font-bold mb-8">Demande de Suppression de Compte</h1>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="contactMethod"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Comment pouvons-nous vous contacter ?</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une méthode de contact" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="email">E-mail</SelectItem>
+                    <SelectItem value="phone">Téléphone</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="contactValue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {form.watch("contactMethod") === "email" ? "Adresse e-mail" : "Numéro de téléphone"}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={form.watch("contactMethod") === "email" 
+                      ? "Entrez votre e-mail" 
+                      : "Entrez votre numéro de téléphone"}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Raison de la suppression</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une raison" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="no_longer_needed">Plus besoin du service</SelectItem>
+                    <SelectItem value="privacy_concerns">Préoccupations de confidentialité</SelectItem>
+                    <SelectItem value="switching_service">Changement de service</SelectItem>
+                    <SelectItem value="not_satisfied">Non satisfait du service</SelectItem>
+                    <SelectItem value="other">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {form.watch("reason") === "other" && (
+            <FormField
+              control={form.control}
+              name="customReason"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Veuillez préciser votre raison</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Dites-nous pourquoi vous souhaitez supprimer votre compte"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Envoi en cours...' : 'Envoyer la Demande de Suppression'}
+          </Button>
+        </form>
+      </Form>
     </div>
-  );
+  )
 }
