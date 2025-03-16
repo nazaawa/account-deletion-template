@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { z } from 'zod'
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 const deletionRequestSchema = z.object({
   contactMethod: z.enum(["email", "phone"]),
@@ -9,39 +9,59 @@ const deletionRequestSchema = z.object({
     "privacy_concerns",
     "switching_service",
     "not_satisfied",
-    "other"
+    "other",
   ]),
   customReason: z.string().optional(),
-})
+});
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const validatedData = deletionRequestSchema.parse(body)
+    const body = await request.json();
+    const validatedData = deletionRequestSchema.parse(body);
 
     // Here you would typically:
     // 1. Save the deletion request to your database
     // 2. Send notification emails
     // 3. Start the account deletion process
     // For now, we'll just simulate a successful request
-    
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
 
-    return NextResponse.json({
-      message: "Demande de suppression reçue avec succès",
-      data: validatedData
-    }, { status: 200 })
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        message: "Données de formulaire invalides",
-        errors: error.errors
-      }, { status: 400 })
+    // Call api to delete account
+    const response = await fetch("https://api.example.com/delete-account", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(validatedData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete account");
     }
 
-    return NextResponse.json({
-      message: "Une erreur s'est produite lors du traitement de votre demande"
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        message: "Demande de suppression reçue avec succès",
+        data: validatedData,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          message: "Données de formulaire invalides",
+          errors: error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        message:
+          "Une erreur s'est produite lors du traitement de votre demande",
+      },
+      { status: 500 }
+    );
   }
 }

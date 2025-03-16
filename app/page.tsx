@@ -84,12 +84,13 @@ export default function AccountDeletionPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
       <Toaster richColors position="top-center" />
 
-      <h1 className="text-3xl font-bold mb-8">Demande de Suppression de Compte</h1>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <div className="w-full max-w-xl bg-white rounded-lg shadow-lg border border-gray-200 p-8">
+        <h1 className="text-3xl font-bold mb-8 text-center">Demande de Suppression de Compte</h1>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
             name="contactMethod"
@@ -180,8 +181,9 @@ export default function AccountDeletionPage() {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? 'Envoi en cours...' : 'Envoyer la Demande de Suppression'}
           </Button>
-        </form>
-      </Form>
+          </form>
+        </Form>
+      </div>
     </div>
   )
 }
