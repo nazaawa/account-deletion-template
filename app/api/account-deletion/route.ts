@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     // For now, we'll just simulate a successful request
 
     // Call api to delete account
-    const response = await fetch("https://api.example.com/delete-account", {
+    const response = await fetch(process.env.ACCOUNT_DELETION_API_URL!, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
