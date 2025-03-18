@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "App Name",
-  description: "App Description",
+  title: "Zone alert",
+  description: "suppression de compte",
+  icons: {
+    icon: "/zone_alert.svg",
+  },
 };
 
 export default function RootLayout({
