@@ -84,22 +84,26 @@ export default function AccountDeletionPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
       <Toaster richColors position="top-center" />
 
-      <div className="w-full max-w-xl bg-white rounded-lg shadow-lg border border-gray-200 p-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Demande de Suppression de Compte</h1>
+      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6">
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold text-gray-900">Demande de Suppression de Compte</h1>
+          <p className="text-gray-500 text-sm">Veuillez remplir ce formulaire pour demander la suppression de votre compte</p>
+        </div>
+        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
             name="contactMethod"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Comment pouvons-nous vous contacter ?</FormLabel>
+              <FormItem className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+                <FormLabel className="text-gray-700">Comment pouvons-nous vous contacter ?</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue placeholder="Sélectionnez une méthode de contact" />
                     </SelectTrigger>
                   </FormControl>
@@ -108,7 +112,7 @@ export default function AccountDeletionPage() {
                     <SelectItem value="phone">Téléphone</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-red-500 text-sm" />
               </FormItem>
             )}
           />
@@ -117,19 +121,20 @@ export default function AccountDeletionPage() {
             control={form.control}
             name="contactValue"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>
+              <FormItem className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+                <FormLabel className="text-gray-700">
                   {form.watch("contactMethod") === "email" ? "Adresse e-mail" : "Numéro de téléphone"}
                 </FormLabel>
                 <FormControl>
                   <Input
+                    className="bg-white"
                     placeholder={form.watch("contactMethod") === "email" 
                       ? "Entrez votre e-mail" 
                       : "Entrez votre numéro de téléphone"}
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-500 text-sm" />
               </FormItem>
             )}
           />
@@ -138,11 +143,11 @@ export default function AccountDeletionPage() {
             control={form.control}
             name="reason"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Raison de la suppression</FormLabel>
+              <FormItem className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+                <FormLabel className="text-gray-700">Raison de la suppression</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white">
                       <SelectValue placeholder="Sélectionnez une raison" />
                     </SelectTrigger>
                   </FormControl>
@@ -154,7 +159,7 @@ export default function AccountDeletionPage() {
                     <SelectItem value="other">Autre</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-red-500 text-sm" />
               </FormItem>
             )}
           />
@@ -164,21 +169,26 @@ export default function AccountDeletionPage() {
               control={form.control}
               name="customReason"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Veuillez préciser votre raison</FormLabel>
+                <FormItem className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+                  <FormLabel className="text-gray-700">Veuillez préciser votre raison</FormLabel>
                   <FormControl>
                     <Textarea
+                      className="bg-white min-h-[100px]"
                       placeholder="Dites-nous pourquoi vous souhaitez supprimer votre compte"
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500 text-sm" />
                 </FormItem>
               )}
             />
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button 
+            type="submit" 
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 rounded-lg transition-colors"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? 'Envoi en cours...' : 'Envoyer la Demande de Suppression'}
           </Button>
           </form>
